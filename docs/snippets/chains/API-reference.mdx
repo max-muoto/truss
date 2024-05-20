@@ -1,0 +1,389 @@
+# API Reference
+
+### *class* truss_chains.definitions.ABCChainlet
+
+Bases: `ABC`
+
+#### default_user_config *: `ClassVar`[`Optional`[`BaseModel`]]* *= None*
+
+#### *classmethod* has_custom_init()
+
+* **Return type:**
+  `bool`
+
+#### remote_config *: `ClassVar`[[`RemoteConfig`](#truss_chains.RemoteConfig)]* *= RemoteConfig(docker_image=DockerImage(base_image='python:3.11-slim', pip_requirements_file=None, pip_requirements=[], apt_requirements=[], data_dir=None), compute=truss_chains.definitions.Compute, assets=truss_chains.definitions.Assets, name=None)*
+
+### *class* truss_chains.Assets(cached=(), secret_keys=())
+
+Bases: `object`
+
+Builder to create asset spec.
+
+* **Parameters:**
+  * **cached** (`Iterable`[`Any`])
+  * **secret_keys** (`Iterable`[`str`])
+
+#### get_spec()
+
+* **Return type:**
+  [`AssetSpec`](#truss_chains.definitions.AssetSpec)
+
+### *class* truss_chains.definitions.AssetSpec(\*\*data)
+
+Bases: `SafeModel`
+
+* **Parameters:**
+  * **data** (`Any`)
+  * **secrets** (*dict* *[**str* *,* *str* *]*)
+  * **cached** (*list* *[**Any* *]*)
+
+#### cached *: `list`[`Any`]*
+
+#### secrets *: `dict`[`str`, `str`]*
+
+### *class* truss_chains.ChainletBase
+
+Bases: [`ABCChainlet`](#truss_chains.definitions.ABCChainlet)
+
+### *class* truss_chains.deploy.ChainService(entrypoint, name)
+
+Bases: `object`
+
+* **Parameters:**
+  * **entrypoint** (`str`)
+  * **name** (`str`)
+
+#### add_service(name, service)
+
+* **Parameters:**
+  * **name** (`str`)
+  * **service** (`TrussService`)
+* **Return type:**
+  `None`
+
+#### *property* get_entrypoint *: TrussService*
+
+#### get_info()
+
+Return list with elements (name, status, logs_url) for each chainlet.
+
+* **Return type:**
+  `list`[`tuple`[`str`, `str`, `str`]]
+
+#### run_remote(json)
+
+* **Parameters:**
+  **json** (`Dict`)
+* **Return type:**
+  `Any`
+
+#### *property* run_url *: str*
+
+### *class* truss_chains.ChainsRuntimeError
+
+Bases: `Exception`
+
+Raised when components are not used the expected way at runtime.
+
+### *class* truss_chains.Compute(cpu_count=1, memory='2Gi', gpu=None, gpu_count=1, predict_concurrency=1)
+
+Bases: `object`
+
+Builder to create ComputeSpec.
+
+* **Parameters:**
+  * **cpu_count** (`int`)
+  * **memory** (`str`)
+  * **gpu** (`Union`[`str`, `Accelerator`, `None`])
+  * **gpu_count** (`int`)
+  * **predict_concurrency** (`Union`[`int`, `Literal`[`'cpu_count'`]])
+
+#### get_spec()
+
+* **Return type:**
+  [`ComputeSpec`](#truss_chains.definitions.ComputeSpec)
+
+### *class* truss_chains.definitions.ComputeSpec(\*\*data)
+
+Bases: `BaseModel`
+
+* **Parameters:**
+  * **data** (`Any`)
+  * **cpu_count** (*int*)
+  * **predict_concurrency** (*int*)
+  * **memory** (*str*)
+  * **accelerator** (*AcceleratorSpec*)
+
+#### accelerator *: `AcceleratorSpec`*
+
+#### cpu_count *: `int`*
+
+#### memory *: `str`*
+
+#### predict_concurrency *: `int`*
+
+### truss_chains.depends(chainlet_cls, retries=1)
+
+Sets a “symbolic marker” for injecting a stub or local Chainlet at runtime.
+
+Warning:
+: Despite the type annotation, this does *not* immediately provide a
+  chainlet instance. Only when deploying remotely or using run_local a
+  chainlet instance is provided.
+
+* **Parameters:**
+  * **chainlet_cls** (`Type`[`TypeVar`(`ChainletT`, bound= [`ABCChainlet`](#truss_chains.definitions.ABCChainlet))])
+  * **retries** (`int`)
+* **Return type:**
+  `TypeVar`(`ChainletT`, bound= [`ABCChainlet`](#truss_chains.definitions.ABCChainlet))
+
+### truss_chains.depends_context()
+
+Sets a “symbolic marker” for injecting a Context object at runtime.
+
+* **Return type:**
+  [`DeploymentContext`](#truss_chains.DeploymentContext)
+
+Warning:
+: Despite the type annotation, this does *not* immediately provide a
+  context instance. Only when deploying remotely or using run_local a
+  context instance is provided.
+
+### truss_chains.deploy_remotely(entrypoint, chain_name, publish=True, promote=True, only_generate_trusses=False)
+
+* **Parameters:**
+  * **entrypoint** (`Type`[[`ABCChainlet`](#truss_chains.definitions.ABCChainlet)])
+  * **chain_name** (`str`)
+  * **publish** (`bool`)
+  * **promote** (`bool`)
+  * **only_generate_trusses** (`bool`)
+* **Return type:**
+  [`ChainService`](#truss_chains.deploy.ChainService)
+
+### *class* truss_chains.DeploymentContext(\*\*data)
+
+Bases: `BaseModel`, `Generic`[`UserConfigT`]
+
+Bundles config values and resources needed to instantiate Chainlets.
+
+* **Parameters:**
+  * **data** (`Any`)
+  * **data_dir** (*Path* *|* *None*)
+  * **user_config** (*UserConfigT*)
+  * **chainlet_to_service** (*Mapping* *[**str* *,* [*ServiceDescriptor*](#truss_chains.definitions.ServiceDescriptor) *]*)
+  * **secrets** (*MappingNoIter* *[**str* *,* *str* *]*)
+
+#### chainlet_to_service *: `Mapping`[`str`, [`ServiceDescriptor`](#truss_chains.definitions.ServiceDescriptor)]*
+
+#### data_dir *: `Optional`[`Path`]*
+
+#### get_baseten_api_key()
+
+* **Return type:**
+  `str`
+
+#### get_service_descriptor(chainlet_name)
+
+* **Parameters:**
+  **chainlet_name** (`str`)
+* **Return type:**
+  [`ServiceDescriptor`](#truss_chains.definitions.ServiceDescriptor)
+
+#### secrets *: `MappingNoIter`[`str`, `str`]*
+
+#### user_config *: `TypeVar`(`UserConfigT`, bound= `Optional`[`BaseModel`])*
+
+### *class* truss_chains.DockerImage(\*\*data)
+
+Bases: `SafeModelNonSerializable`
+
+* **Parameters:**
+  * **data** (`Any`)
+  * **base_image** (*str*)
+  * **pip_requirements_file** (*AbsPath* *|* *None*)
+  * **pip_requirements** (*list* *[**str* *]*)
+  * **apt_requirements** (*list* *[**str* *]*)
+  * **data_dir** (*AbsPath* *|* *None*)
+
+#### apt_requirements *: `list`[`str`]*
+
+#### base_image *: `str`*
+
+#### data_dir *: `Optional`[`AbsPath`]*
+
+#### pip_requirements *: `list`[`str`]*
+
+#### pip_requirements_file *: `Optional`[`AbsPath`]*
+
+### truss_chains.entrypoint(cls)
+
+* **Parameters:**
+  **cls** (`Type`[`TypeVar`(`ChainletT`, bound= [`ABCChainlet`](#truss_chains.definitions.ABCChainlet))])
+* **Return type:**
+  `Type`[`TypeVar`(`ChainletT`, bound= [`ABCChainlet`](#truss_chains.definitions.ABCChainlet))]
+
+### truss_chains.make_abs_path_here(file_path)
+
+Helper to specify file paths relative to the *immediately calling* module.
+
+E.g. in you have a project structure like this:
+
+```default
+root/
+    chain.py
+    common_requirements.text
+    sub_package/
+        Chainlet.py
+        chainlet_requirements.txt
+```
+
+You can now in root/sub_package/Chainlet.py point to the requirements
+file like this:
+
+```default
+shared = RelativePathToHere("../common_requirements.text")
+specific = RelativePathToHere("chainlet_requirements.text")
+```
+
+Warning:
+: This helper uses the directory of the immediately calling module as an
+  absolute reference point for resolving the file location. Therefore,
+  you MUST NOT wrap the instantiation of RelativePathToHere into a
+  function (e.g. applying decorators) or use dynamic code execution.
+  Ok:
+  ```default
+  def foo(path: AbsPath):
+      abs_path = path.abs_path
+  foo(make_abs_path_here("blabla"))
+  ```
+
+  Not Ok:
+  ```default
+  def foo(path: str):
+      badbadbad = make_abs_path_here(path).abs_path
+  foo("blabla"))
+  ```
+
+* **Parameters:**
+  **file_path** (`str`)
+* **Return type:**
+  `AbsPath`
+
+### *class* truss_chains.RemoteConfig(\*\*data)
+
+Bases: `SafeModelNonSerializable`
+
+Bundles config values needed to deploy a Chainlet.
+
+* **Parameters:**
+  * **data** (`Any`)
+  * **docker_image** ([*DockerImage*](#truss_chains.DockerImage))
+  * **compute** ([*Compute*](#truss_chains.Compute))
+  * **assets** ([*Assets*](#truss_chains.Assets))
+  * **name** (*str* *|* *None*)
+
+#### assets *: [`Assets`](#truss_chains.Assets)*
+
+#### compute *: [`Compute`](#truss_chains.Compute)*
+
+#### docker_image *: [`DockerImage`](#truss_chains.DockerImage)*
+
+#### get_asset_spec()
+
+* **Return type:**
+  [`AssetSpec`](#truss_chains.definitions.AssetSpec)
+
+#### get_compute_spec()
+
+* **Return type:**
+  [`ComputeSpec`](#truss_chains.definitions.ComputeSpec)
+
+#### name *: `Optional`[`str`]*
+
+### *class* truss_chains.RemoteErrorDetail(\*\*data)
+
+Bases: `SafeModel`
+
+* **Parameters:**
+  * **data** (`Any`)
+  * **remote_name** (*str*)
+  * **exception_cls_name** (*str*)
+  * **exception_module_name** (*str* *|* *None*)
+  * **exception_message** (*str*)
+  * **user_stack_trace** (*list* *[**StackFrame* *]*)
+
+#### exception_cls_name *: `str`*
+
+#### exception_message *: `str`*
+
+#### exception_module_name *: `Optional`[`str`]*
+
+#### format()
+
+* **Return type:**
+  `str`
+
+#### remote_name *: `str`*
+
+#### to_stack_summary()
+
+* **Return type:**
+  `StackSummary`
+
+#### user_stack_trace *: `list`[`StackFrame`]*
+
+### *class* truss_chains.RPCOptions(\*\*data)
+
+Bases: `SafeModel`
+
+* **Parameters:**
+  * **data** (`Any`)
+  * **timeout_sec** (*int*)
+  * **retries** (*int*)
+
+#### retries *: `int`*
+
+#### timeout_sec *: `int`*
+
+### truss_chains.run_local(secrets=None, data_dir=None, chainlet_to_service=None)
+
+Context manager for using in-process instantiations of Chainlet dependencies.
+
+* **Parameters:**
+  * **secrets** (`Optional`[`Mapping`[`str`, `str`]])
+  * **data_dir** (`Union`[`Path`, `str`, `None`])
+  * **chainlet_to_service** (`Optional`[`Mapping`[`str`, [`ServiceDescriptor`](#truss_chains.definitions.ServiceDescriptor)]])
+* **Return type:**
+  `ContextManager`[`None`]
+
+### *class* truss_chains.definitions.ServiceDescriptor(\*\*data)
+
+Bases: `SafeModel`
+
+* **Parameters:**
+  * **data** (`Any`)
+  * **name** (*str*)
+  * **predict_url** (*str*)
+  * **options** ([*RPCOptions*](#truss_chains.RPCOptions))
+
+#### name *: `str`*
+
+#### options *: [`RPCOptions`](#truss_chains.RPCOptions)*
+
+#### predict_url *: `str`*
+
+### *class* truss_chains.StubBase(service_descriptor, api_key)
+
+Bases: `ABC`
+
+* **Parameters:**
+  * **service_descriptor** ([`ServiceDescriptor`](#truss_chains.definitions.ServiceDescriptor))
+  * **api_key** (`str`)
+
+#### *classmethod* from_url(predict_url, context, options=None, name=None)
+
+* **Parameters:**
+  * **predict_url** (`str`)
+  * **context** ([`DeploymentContext`](#truss_chains.DeploymentContext))
+  * **options** (`Optional`[[`RPCOptions`](#truss_chains.RPCOptions)])
+  * **name** (`Optional`[`str`])

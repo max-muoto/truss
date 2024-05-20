@@ -6,11 +6,12 @@ from truss_chains import definitions, deploy, framework
 
 
 def depends_context() -> definitions.DeploymentContext:
-    """Sets a 'symbolic marker' for injecting a Context object at runtime.
+    """Sets a "symbolic marker" for injecting a Context object at runtime.
 
-    WARNING: Despite the type annotation, this does *not* immediately provide a
-    context instance.
-    Only when deploying remotely or using `run_local` a context instance is provided.
+    Warning:
+        Despite the type annotation, this does *not* immediately provide a
+        context instance. Only when deploying remotely or using `run_local` a
+        context instance is provided.
     """
     # The type error is silenced to because chains framework will at runtime inject
     # a corresponding instance. Nonetheless, we want to use a type annotation here,
@@ -22,11 +23,12 @@ def depends_context() -> definitions.DeploymentContext:
 def depends(
     chainlet_cls: Type[framework.ChainletT], retries: int = 1
 ) -> framework.ChainletT:
-    """Sets a 'symbolic marker' for injecting a stub or local Chainlet at runtime.
+    """Sets a "symbolic marker" for injecting a stub or local Chainlet at runtime.
 
-    WARNING: Despite the type annotation, this does *not* immediately provide a
-    chainlet instance.
-    Only when deploying remotely or using `run_local` a chainlet instance is provided.
+    Warning:
+        Despite the type annotation, this does *not* immediately provide a
+        chainlet instance. Only when deploying remotely or using `run_local` a
+        chainlet instance is provided.
     """
     options = definitions.RPCOptions(retries=retries)
     # The type error is silenced to because chains framework will at runtime inject
